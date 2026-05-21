@@ -6,11 +6,12 @@ The core rule is simple:
 
 > AI proposes. Humans and rules approve. Core knowledge is never silently modified.
 
-This repository packages a clean starter vault, maintenance scripts, workflow docs, and sanitized examples. It is designed for users who want a reusable knowledge base process across domains such as fiction reasoning, programming, quant research, and machine learning.
+This repository packages a clean starter vault, maintenance scripts, companion AI skills, workflow docs, and sanitized examples. It is designed for users who want a reusable knowledge base process across domains such as fiction reasoning, programming, quant research, and machine learning.
 
 ## What Is Included
 
 - `starter/`: an empty starter vault with domain standards, global governance docs, and CLI scripts.
+- `skills/`: companion Cursor Skills for cited answers and safe import/maintenance behavior.
 - `docs/`: installation, usage, workflow, safety, and publishing notes.
 - `examples/`: small sanitized examples that show import, review, and maintenance flows.
 
@@ -60,6 +61,15 @@ python my-knowledge-vault/00-global/scripts/kb.py --root my-knowledge-vault main
 
 See [docs/workflow.md](docs/workflow.md) for the full flow.
 
+## Companion AI Skills
+
+The CLI manages notes and maintenance reports. The skills guide AI behavior:
+
+- `skills/kb-answer-with-citations`: answer from the vault with citations, evidence levels, and uncertainty.
+- `skills/kb-import-and-maintain`: import material and run safe maintenance workflows.
+
+See [docs/skills.md](docs/skills.md) for installation and usage.
+
 ## Safety Model
 
 The toolkit is conservative by design:
@@ -80,6 +90,7 @@ See [docs/safety.md](docs/safety.md) before publishing or syncing a vault.
   LICENSE
   docs/
   examples/
+  skills/
   starter/
 ```
 

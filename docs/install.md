@@ -50,3 +50,15 @@ python ~/my-knowledge-vault/00-global/scripts/kb.py --root ~/my-knowledge-vault 
 ```
 
 Add `--write` only after reviewing dry-run output.
+
+## Optional Companion Skills
+
+Install the AI behavior layer if you want Cursor agents to answer from the vault with citations or help with safe import and maintenance:
+
+```bash
+mkdir -p ~/.cursor/skills
+cp -R skills/kb-answer-with-citations ~/.cursor/skills/
+cp -R skills/kb-import-and-maintain ~/.cursor/skills/
+```
+
+See `docs/skills.md` for details.

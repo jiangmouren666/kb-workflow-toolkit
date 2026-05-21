@@ -5,6 +5,7 @@ Run this checklist before pushing the repository to GitHub.
 ## Content
 
 - [ ] The repository contains `starter/`, `docs/`, and `examples/`.
+- [ ] The repository contains `skills/` if publishing the AI behavior layer.
 - [ ] The starter is usable without private source notes.
 - [ ] Examples use synthetic or very short placeholder content.
 - [ ] No private Obsidian vault content is included.
