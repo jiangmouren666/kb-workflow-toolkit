@@ -1,0 +1,26 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.DS_Store
+
+# Runtime vault state
+**/00-global/state/
+**/kb.lock
+**/*.jsonl
+**/audit-reports/
+**/maintenance-tasks.md
+**/maintenance-proposals.md
+**/maintenance-change-drafts.md
+**/maintenance-apply-packages.md
+**/maintenance-apply-plans.md
+**/improvement-candidates.md
+**/improvement-review-registry.md
+**/maintenance-*-registry.md
+
+# Local/private material
+private/
+local-vault/
+*.env
+.env*

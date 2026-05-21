@@ -1,0 +1,52 @@
+# Installation
+
+## Requirements
+
+- Python 3.10 or newer.
+- A local folder for your knowledge vault.
+- Optional: Obsidian, Git, WebDAV, or another sync layer.
+
+The toolkit does not require a database or hosted service.
+
+## Clone
+
+```bash
+git clone https://github.com/your-name/kb-workflow-toolkit.git
+cd kb-workflow-toolkit
+```
+
+## Create A Vault From The Starter
+
+```bash
+cp -R starter ~/my-knowledge-vault
+```
+
+Run the initial scan:
+
+```bash
+python ~/my-knowledge-vault/00-global/scripts/kb.py --root ~/my-knowledge-vault scan
+```
+
+You should see an audit report. A clean starter may still contain draft templates; that is normal.
+
+## Optional Initialization
+
+If you want the toolkit to write local config for a new vault:
+
+```bash
+python ~/my-knowledge-vault/00-global/scripts/kb.py init --root ~/my-knowledge-vault
+```
+
+This creates local state under `00-global/state/`. Do not commit that state to a public repository.
+
+## Useful Commands
+
+```bash
+python ~/my-knowledge-vault/00-global/scripts/kb.py --root ~/my-knowledge-vault scan
+python ~/my-knowledge-vault/00-global/scripts/kb.py --root ~/my-knowledge-vault improve
+python ~/my-knowledge-vault/00-global/scripts/kb.py --root ~/my-knowledge-vault review-improvements --limit 5
+python ~/my-knowledge-vault/00-global/scripts/kb.py --root ~/my-knowledge-vault maintain plan
+python ~/my-knowledge-vault/00-global/scripts/kb.py --root ~/my-knowledge-vault maintain status
+```
+
+Add `--write` only after reviewing dry-run output.
