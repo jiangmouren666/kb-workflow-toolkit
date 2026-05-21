@@ -65,3 +65,25 @@ This is a shortened synthetic example of what `maintain plan` can produce after 
 ## Important
 
 These plans are previews. They do not edit notes and do not change trust status.
+
+## Apply Dry-Run
+
+```bash
+python my-knowledge-vault/00-global/scripts/kb.py --root my-knowledge-vault maintain apply --plan-id c0ef89c844b0e117
+```
+
+Expected behavior:
+
+```text
+apply_status: dry_run
+plan_id: c0ef89c844b0e117
+operation_count: 2
+```
+
+## Apply With Confirmation
+
+```bash
+python my-knowledge-vault/00-global/scripts/kb.py --root my-knowledge-vault maintain apply --plan-id c0ef89c844b0e117 --write --confirm c0ef89c844b0e117
+```
+
+This writes only if the target SHA256 still matches the plan. A rollback snapshot is saved before any file changes.

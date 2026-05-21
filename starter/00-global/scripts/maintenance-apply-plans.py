@@ -209,6 +209,41 @@ def rollback_notes_for(target_exists: bool) -> list[str]:
     return ["No rollback snapshot is available until the target file exists."]
 
 
+def split_scaffold_path(relpath: str) -> str:
+    path = Path(relpath)
+    return path.with_name(f"{path.stem}-split-notes.md").as_posix()
+
+
+def safe_operations_for(entry: dict, target_exists: bool) -> list[dict]:
+    if not target_exists:
+        return []
+    relpath = str(entry.get("path", ""))
+    operations: list[dict] = [
+        {
+            "operation": "metadata_patch",
+            "mode": "missing_only",
+            "fields": {
+                "review_cycle": "180d",
+                "time_sensitivity": "medium",
+            },
+        },
+        {"operation": "append_review_note"},
+    ]
+    if relpath.startswith("fiction-reasoning/"):
+        operations.append(
+            {
+                "operation": "split_draft_scaffold",
+                "scaffolds": [
+                    {
+                        "path": split_scaffold_path(relpath),
+                        "title": f"{Path(relpath).stem.replace('-', ' ').title()} Split Notes",
+                    }
+                ],
+            }
+        )
+    return operations
+
+
 def plan_from_review_entry(root: Path, entry: dict) -> dict:
     relpath = entry.get("path", "")
     target = safe_target_path(root, relpath)
@@ -247,6 +282,7 @@ def plan_from_review_entry(root: Path, entry: dict) -> dict:
         "preflight_checks": preflight_checks_for(target_path_valid, target_exists),
         "rollback_notes": rollback_notes_for(target_exists),
         "apply_requires_explicit_confirmation": True,
+        "safe_operations": safe_operations_for(entry, target_exists),
         "created_at": datetime.now().isoformat(timespec="seconds"),
     }
 

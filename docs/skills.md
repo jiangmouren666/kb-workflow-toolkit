@@ -78,3 +78,15 @@ flowchart TD
   draftNote --> cliScan[CLIScan]
   cliScan --> maintainPlan[MaintainPlan]
 ```
+
+## Vault Root Resolution
+
+Skills should not contain machine-specific paths. Agents should resolve `vault_root` in this order:
+
+1. User-provided `vault_root` in the current request.
+2. `knowledge-vaults/` under the current workspace.
+3. Environment variable `KNOWLEDGE_VAULT_ROOT`.
+4. `00-global/state/vault-config.json` if already inside a vault.
+5. Repository `starter/` only for examples or smoke tests.
+
+If none is clear, the agent should ask for the vault path instead of guessing.

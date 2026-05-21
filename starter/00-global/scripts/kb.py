@@ -232,6 +232,8 @@ def default_protected_paths(root: Path) -> list[Path]:
         "00-global/scripts/maintenance-change-draft-review.py",
         "00-global/scripts/maintenance-apply-packages.py",
         "00-global/scripts/maintenance-apply-plans.py",
+        "00-global/scripts/maintenance-apply.py",
+        "00-global/scripts/trust-drift-report.py",
         "00-global/scripts/sync-vault.py",
         "00-global/scripts/scan-vault-strict.py",
         "00-global/scripts/apply-registry-overlay.py",
@@ -246,6 +248,8 @@ def default_protected_paths(root: Path) -> list[Path]:
         "00-global/scripts/test_maintenance_change_draft_review.py",
         "00-global/scripts/test_maintenance_apply_packages.py",
         "00-global/scripts/test_maintenance_apply_plans.py",
+        "00-global/scripts/test_maintenance_apply.py",
+        "00-global/scripts/test_trust_drift_report.py",
         "00-global/scripts/test_sync_vault.py",
         "00-global/evaluation/context_pack_builder_v2.py",
         "00-global/evaluation/test_context_pack_builder_v2.py",
@@ -681,9 +685,22 @@ def command_apply_packages(args: argparse.Namespace) -> None:
 def command_maintain(args: argparse.Namespace) -> None:
     root = Path(args.root)
     if args.action == "apply":
-        print("apply_status: not_implemented")
-        print(f"plan_id: {args.plan_id}")
-        print("policy: P10 apply is a safe stub; no note is modified")
+        script_args = ["--root", str(root), "--plan-id", args.plan_id]
+        if args.write:
+            script_args.append("--write")
+        if args.confirm:
+            script_args.extend(["--confirm", args.confirm])
+        if args.write:
+            with acquire_lock(root):
+                before = build_manifest(root)
+                result = run_script(root, "maintenance-apply.py", *script_args)
+                after = build_manifest(root)
+                print(result.stdout, end="")
+                print_write_diff(before, after)
+                run_auto_sync(root, "after checksum-gated maintenance apply")
+            return
+        result = run_script(root, "maintenance-apply.py", *script_args)
+        print(result.stdout, end="")
         return
 
     script_action = "generate" if args.action == "plan" else args.action
@@ -978,10 +995,11 @@ def build_parser() -> argparse.ArgumentParser:
     add_root(maintain_plan)
     maintain_plan.add_argument("--write", action="store_true", help="Write consolidated apply plan reports")
     maintain_plan.set_defaults(func=command_maintain)
-    maintain_apply = maintain_sub.add_parser("apply", help="Reserved apply workflow stub; does not modify notes in P10")
+    maintain_apply = maintain_sub.add_parser("apply", help="Apply a checksum-gated maintenance plan")
     add_root(maintain_apply)
-    maintain_apply.add_argument("--plan-id", required=True, help="Apply plan ID to apply in a future workflow")
-    maintain_apply.add_argument("--write", action="store_true", help="Reserved for future explicit apply workflow")
+    maintain_apply.add_argument("--plan-id", required=True, help="Apply plan ID to apply")
+    maintain_apply.add_argument("--write", action="store_true", help="Actually apply safe operations")
+    maintain_apply.add_argument("--confirm", default="", help="Must match --plan-id when --write is used")
     maintain_apply.set_defaults(func=command_maintain)
 
     snapshot = subparsers.add_parser("snapshot", help="Save a SHA256 manifest snapshot")

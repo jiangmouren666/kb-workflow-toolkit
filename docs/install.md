@@ -47,6 +47,8 @@ python ~/my-knowledge-vault/00-global/scripts/kb.py --root ~/my-knowledge-vault 
 python ~/my-knowledge-vault/00-global/scripts/kb.py --root ~/my-knowledge-vault review-improvements --limit 5
 python ~/my-knowledge-vault/00-global/scripts/kb.py --root ~/my-knowledge-vault maintain plan
 python ~/my-knowledge-vault/00-global/scripts/kb.py --root ~/my-knowledge-vault maintain status
+python ~/my-knowledge-vault/00-global/scripts/kb.py --root ~/my-knowledge-vault maintain apply --plan-id <plan-id>
+python ~/my-knowledge-vault/00-global/scripts/trust-drift-report.py --root ~/my-knowledge-vault
 ```
 
 Add `--write` only after reviewing dry-run output.
@@ -62,3 +64,11 @@ cp -R skills/kb-import-and-maintain ~/.cursor/skills/
 ```
 
 See `docs/skills.md` for details.
+
+To avoid editing skill files when changing machines, set a vault root environment variable in your shell profile:
+
+```bash
+export KNOWLEDGE_VAULT_ROOT="$HOME/my-knowledge-vault"
+```
+
+The skills also accept an explicit `vault_root` in your prompt, which takes priority over the environment variable.

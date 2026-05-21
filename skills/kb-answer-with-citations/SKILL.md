@@ -9,6 +9,18 @@ description: Answer questions from a local KB Workflow Toolkit vault with explic
 
 Use this skill when answering from a KB Workflow Toolkit vault. The goal is not only to find relevant notes, but to preserve trust boundaries: cite source paths, separate fact from inference, and state what the vault does not prove.
 
+## Resolve Vault Root
+
+Resolve `<vault_root>` before reading notes. Use this order:
+
+1. User-provided `vault_root` in the current request.
+2. `knowledge-vaults/` under the current workspace.
+3. Environment variable `KNOWLEDGE_VAULT_ROOT`.
+4. `00-global/state/vault-config.json` if already inside a vault.
+5. Repository `starter/` only for examples or smoke tests.
+
+If no candidate is clear, ask the user for the vault path. Do not guess a private path or edit the skill.
+
 ## Required Reading Order
 
 1. Read `<vault_root>/00-global/current-governance-v2.md` if present.

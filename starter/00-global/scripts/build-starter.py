@@ -34,6 +34,8 @@ SCRIPT_FILES = (
     "maintenance-change-draft-review.py",
     "maintenance-apply-packages.py",
     "maintenance-apply-plans.py",
+    "maintenance-apply.py",
+    "trust-drift-report.py",
     "sync-vault.py",
     "build-starter.py",
     "test_kb.py",
@@ -48,6 +50,8 @@ SCRIPT_FILES = (
     "test_maintenance_change_draft_review.py",
     "test_maintenance_apply_packages.py",
     "test_maintenance_apply_plans.py",
+    "test_maintenance_apply.py",
+    "test_trust_drift_report.py",
 )
 EVALUATION_FILES = (
     "context_pack_builder_v2.py",

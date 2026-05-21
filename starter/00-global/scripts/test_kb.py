@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import shutil
@@ -423,17 +424,19 @@ improvement_notes: []
             self.assertTrue((root / "00-global" / "maintenance-apply-packages.md").exists())
             self.assertTrue((root / "00-global" / "state" / "maintenance-apply-packages.jsonl").exists())
 
-    def test_maintain_command_accepts_status_plan_and_apply_stub(self) -> None:
+    def test_maintain_command_accepts_status_plan_and_apply(self) -> None:
         kb = load_kb()
         parser = kb.build_parser()
         status_args = parser.parse_args(["maintain", "status", "--root", "/tmp/portable-kb"])
         plan_args = parser.parse_args(["maintain", "plan", "--root", "/tmp/portable-kb", "--write"])
-        apply_args = parser.parse_args(["maintain", "apply", "--root", "/tmp/portable-kb", "--plan-id", "plan-123"])
+        apply_args = parser.parse_args(["maintain", "apply", "--root", "/tmp/portable-kb", "--plan-id", "plan-123", "--write", "--confirm", "plan-123"])
 
         self.assertEqual(status_args.root, "/tmp/portable-kb")
         self.assertEqual(plan_args.root, "/tmp/portable-kb")
         self.assertTrue(plan_args.write)
         self.assertEqual(apply_args.plan_id, "plan-123")
+        self.assertEqual(apply_args.confirm, "plan-123")
+        self.assertTrue(apply_args.write)
 
     def test_maintain_plan_write_preserves_sources_through_kb_wrapper(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -469,12 +472,33 @@ improvement_notes: []
             self.assertTrue((root / "00-global" / "maintenance-apply-plans.md").exists())
             self.assertTrue((root / "00-global" / "state" / "maintenance-apply-plans.jsonl").exists())
 
-    def test_maintain_apply_stub_does_not_modify_note(self) -> None:
+    def test_maintain_apply_dry_run_does_not_modify_note(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
+            scripts = root / "00-global" / "scripts"
+            scripts.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(KB_PATH.with_name("maintenance-apply.py"), scripts / "maintenance-apply.py")
             note = root / "quant" / "20-notes" / "seed.md"
             note.parent.mkdir(parents=True)
-            note.write_text("---\nstatus: draft\n---\n# Seed\n", encoding="utf-8")
+            note_text = "---\nstatus: draft\n---\n# Seed\n"
+            note.write_text(note_text, encoding="utf-8")
+            plans = root / "00-global" / "state" / "maintenance-apply-plans.jsonl"
+            plans.parent.mkdir(parents=True, exist_ok=True)
+            plans.write_text(
+                json.dumps(
+                    {
+                        "plan_id": "plan-123",
+                        "path": "quant/20-notes/seed.md",
+                        "status": "ready_preview",
+                        "target_sha256": hashlib.sha256(note_text.encode("utf-8")).hexdigest(),
+                        "safe_operations": [{"operation": "append_review_note"}],
+                    },
+                    ensure_ascii=False,
+                    sort_keys=True,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
             before_note = note.read_text(encoding="utf-8")
 
             result = subprocess.run(
@@ -485,15 +509,36 @@ improvement_notes: []
             )
 
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertIn("apply_status: not_implemented", result.stdout)
+            self.assertIn("apply_status: dry_run", result.stdout)
             self.assertEqual(note.read_text(encoding="utf-8"), before_note)
 
-    def test_maintain_apply_write_stub_does_not_modify_note(self) -> None:
+    def test_maintain_apply_write_requires_confirmation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
+            scripts = root / "00-global" / "scripts"
+            scripts.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(KB_PATH.with_name("maintenance-apply.py"), scripts / "maintenance-apply.py")
             note = root / "quant" / "20-notes" / "seed.md"
             note.parent.mkdir(parents=True)
-            note.write_text("---\nstatus: draft\n---\n# Seed\n", encoding="utf-8")
+            note_text = "---\nstatus: draft\n---\n# Seed\n"
+            note.write_text(note_text, encoding="utf-8")
+            plans = root / "00-global" / "state" / "maintenance-apply-plans.jsonl"
+            plans.parent.mkdir(parents=True, exist_ok=True)
+            plans.write_text(
+                json.dumps(
+                    {
+                        "plan_id": "plan-123",
+                        "path": "quant/20-notes/seed.md",
+                        "status": "ready_preview",
+                        "target_sha256": hashlib.sha256(note_text.encode("utf-8")).hexdigest(),
+                        "safe_operations": [{"operation": "append_review_note"}],
+                    },
+                    ensure_ascii=False,
+                    sort_keys=True,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
             before_note = note.read_text(encoding="utf-8")
 
             result = subprocess.run(
@@ -504,7 +549,7 @@ improvement_notes: []
             )
 
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertIn("apply_status: not_implemented", result.stdout)
+            self.assertIn("apply_status: blocked_missing_confirmation", result.stdout)
             self.assertEqual(note.read_text(encoding="utf-8"), before_note)
 
     def test_manifest_diff_detects_added_modified_and_deleted_files(self) -> None:

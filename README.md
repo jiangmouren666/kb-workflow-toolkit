@@ -48,7 +48,19 @@ After human review, generate a consolidated maintenance plan:
 python my-knowledge-vault/00-global/scripts/kb.py --root my-knowledge-vault maintain plan
 ```
 
-`maintain apply` is intentionally a safe stub in this version. It reports that apply is not implemented and does not modify notes.
+Preview a checksum-gated apply:
+
+```bash
+python my-knowledge-vault/00-global/scripts/kb.py --root my-knowledge-vault maintain apply --plan-id <plan-id>
+```
+
+Actually applying requires explicit confirmation:
+
+```bash
+python my-knowledge-vault/00-global/scripts/kb.py --root my-knowledge-vault maintain apply --plan-id <plan-id> --write --confirm <plan-id>
+```
+
+The apply step checks the target SHA256 and saves a rollback snapshot before writing.
 
 ## Recommended Daily Flow
 
@@ -57,7 +69,8 @@ python my-knowledge-vault/00-global/scripts/kb.py --root my-knowledge-vault main
 3. Generate improvement candidates.
 4. Record human decisions.
 5. Generate a maintenance plan preview.
-6. Apply changes only through a later explicit, checksum-verified workflow.
+6. Apply only checksum-gated safe operations with explicit confirmation.
+7. Periodically generate trust drift reports for registry/frontmatter and `verified` evidence drift.
 
 See [docs/workflow.md](docs/workflow.md) for the full flow.
 
@@ -78,6 +91,7 @@ The toolkit is conservative by design:
 - Review registries record decisions; they do not prove external truth.
 - `reviewed` means useful within a human-approved scope.
 - `verified` requires stronger evidence such as official docs, source code, experiments, backtests, or production results.
+- `maintain apply --write` requires `--confirm <plan-id>`, target SHA256 match, and rollback snapshot creation.
 - Private knowledge should stay outside this public repository.
 
 See [docs/safety.md](docs/safety.md) before publishing or syncing a vault.

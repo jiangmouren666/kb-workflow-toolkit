@@ -124,6 +124,26 @@ class MaintenanceApplyPlanTests(unittest.TestCase):
         self.assertEqual(plan["target_sha256"], hashlib.sha256(text.encode("utf-8")).hexdigest())
         self.assertEqual(plan["status"], "ready_preview")
         self.assertIn("target_sha256_recorded", plan["preflight_checks"])
+        self.assertIn("safe_operations", plan)
+        self.assertIn("metadata_patch", [item["operation"] for item in plan["safe_operations"]])
+        self.assertIn("append_review_note", [item["operation"] for item in plan["safe_operations"]])
+
+    def test_fiction_plan_includes_split_scaffold_operation(self) -> None:
+        module = load_module()
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_note(root, "fiction-reasoning/20-notes/outline.md")
+            entry = {
+                "candidate_id": "fiction-outline",
+                "path": "fiction-reasoning/20-notes/outline.md",
+                "candidate_type": "frequently_used_but_draft",
+                "decision": "accepted_for_review",
+            }
+
+            plan = module.plan_from_review_entry(root, entry)
+
+        operations = [item["operation"] for item in plan["safe_operations"]]
+        self.assertIn("split_draft_scaffold", operations)
 
     def test_fiction_reasoning_plan_uses_domain_specific_suggestions(self) -> None:
         module = load_module()

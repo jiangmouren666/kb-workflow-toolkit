@@ -231,17 +231,23 @@ Check maintenance status:
 python <vault_root>/00-global/scripts/kb.py --root <vault_root> maintain status
 ```
 
-This writes `00-global/maintenance-apply-plans.md` and `00-global/state/maintenance-apply-plans.jsonl`. Apply plans consolidate the older task/proposal/draft/package pipeline into one reviewable preview. They do not apply patches or modify notes, registries, standards, task/proposal/draft/package status, or trust status.
+This writes `00-global/maintenance-apply-plans.md` and `00-global/state/maintenance-apply-plans.jsonl`. Apply plans consolidate the older task/proposal/draft/package pipeline into one reviewable preview. Planning does not apply patches or modify notes, registries, standards, task/proposal/draft/package status, or trust status.
 
 For daily usefulness without adding a plugin system, `maintain plan` includes a few built-in domain suggestions for `fiction-reasoning/`, `programming/`, and `quant/` notes. These suggestions are advisory only; they still require human review and a later explicit apply step.
 
-The reserved apply entry point is intentionally a safe stub in this phase:
+Preview a checksum-gated apply:
 
 ```bash
 python <vault_root>/00-global/scripts/kb.py --root <vault_root> maintain apply --plan-id <plan-id>
 ```
 
-It reports `not_implemented` and does not modify notes.
+Actually writing requires explicit confirmation:
+
+```bash
+python <vault_root>/00-global/scripts/kb.py --root <vault_root> maintain apply --plan-id <plan-id> --write --confirm <plan-id>
+```
+
+Apply verifies `target_sha256`, writes only safe structured operations, and saves a rollback snapshot before changing files.
 
 ## 8. Advanced: Generate Maintenance Tasks
 

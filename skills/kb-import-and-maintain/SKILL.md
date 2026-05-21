@@ -9,6 +9,18 @@ description: Import materials into a KB Workflow Toolkit vault and run safe main
 
 AI proposes. Humans and rules approve. Core knowledge is never silently modified.
 
+## Resolve Vault Root
+
+Resolve `<vault_root>` before importing or maintaining. Use this order:
+
+1. User-provided `vault_root` in the current request.
+2. `knowledge-vaults/` under the current workspace.
+3. Environment variable `KNOWLEDGE_VAULT_ROOT`.
+4. `00-global/state/vault-config.json` if already inside a vault.
+5. Repository `starter/` only for examples or smoke tests.
+
+If no candidate is clear, ask the user for the vault path. Do not hardcode local paths into this skill.
+
 ## Import Flow
 
 1. Resolve `<vault_root>`.
@@ -74,7 +86,31 @@ After improvement review:
 python <vault_root>/00-global/scripts/kb.py --root <vault_root> maintain plan
 ```
 
-The plan is a preview. It may record target SHA256, proposed operations, evidence requirements, and rollback notes. It must not apply patches or change trust status.
+The plan is a preview. It may record target SHA256, proposed operations, safe operations, evidence requirements, and rollback notes.
+
+To apply, first dry-run:
+
+```bash
+python <vault_root>/00-global/scripts/kb.py --root <vault_root> maintain apply --plan-id <plan-id>
+```
+
+Only write when the user explicitly confirms:
+
+```bash
+python <vault_root>/00-global/scripts/kb.py --root <vault_root> maintain apply --plan-id <plan-id> --write --confirm <plan-id>
+```
+
+Apply must block if target SHA256 no longer matches. Successful writes must create a rollback snapshot.
+
+## Trust Drift
+
+Generate trust drift reports when registry decisions and frontmatter may have diverged:
+
+```bash
+python <vault_root>/00-global/scripts/trust-drift-report.py --root <vault_root>
+```
+
+The report is diagnostic and must not automatically upgrade or downgrade notes.
 
 ## Prohibited Without Explicit Approval
 

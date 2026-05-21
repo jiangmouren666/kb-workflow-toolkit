@@ -128,11 +128,11 @@ Allowed outputs:
 - `00-global/maintenance-apply-plans.md`
 - `00-global/state/maintenance-apply-plans.jsonl`
 
-Apply plans may record source candidate, review decision, target path, current SHA256, proposed operations, evidence requirements, risk notes, rollback notes, and blocked/ready status. They must not apply patches, edit notes, change task/proposal/draft/package status, update review registries, alter domain standards, or change trust status.
+Apply plans may record source candidate, review decision, target path, current SHA256, proposed operations, safe operations, evidence requirements, risk notes, rollback notes, and blocked/ready status. Planning must not apply patches, edit notes, change task/proposal/draft/package status, update review registries, alter domain standards, or change trust status.
 
 Domain-specific proposed operations should remain intentionally small and hard-coded for now. Supported advisory templates are limited to `fiction-reasoning/`, `programming/`, and `quant/`; adding a generalized plugin or multi-domain rules engine is out of scope unless explicitly approved.
 
-`kb.py maintain apply` is reserved as a future explicit apply workflow. In this phase it must remain a safe stub and must not modify notes.
+`kb.py maintain apply` may execute only checksum-gated safe operations. It must require a matching `target_sha256`, `--write`, and `--confirm <plan-id>`, and it must save a rollback snapshot before writing. It must not perform arbitrary body rewrites or trust-status upgrades.
 
 The older task/proposal/draft/package stages remain available as advanced/internal debug pipeline stages, but daily use should prefer `improve -> review-improvements -> maintain plan`.
 

@@ -71,10 +71,37 @@ The preview includes target path, target SHA256, proposed operations, evidence r
 
 ## 6. Apply
 
-In this version, apply is intentionally not implemented:
-
 ```bash
 python <vault_root>/00-global/scripts/kb.py --root <vault_root> maintain apply --plan-id <plan-id>
 ```
 
-It reports `not_implemented` and does not modify notes. This keeps the current release useful for planning while preventing accidental knowledge mutation.
+The default apply command is a dry-run. It checks plan availability, target status, and target SHA256 without writing.
+
+To write, the user must explicitly confirm the exact plan id:
+
+```bash
+python <vault_root>/00-global/scripts/kb.py --root <vault_root> maintain apply --plan-id <plan-id> --write --confirm <plan-id>
+```
+
+The apply workflow:
+
+1. Loads `00-global/state/maintenance-apply-plans.jsonl`.
+2. Finds the matching plan.
+3. Requires `status: ready_preview`.
+4. Verifies the target file is still inside the vault.
+5. Recomputes target SHA256 and compares it to the plan.
+6. Saves a rollback snapshot under `00-global/state/rollback/`.
+7. Applies only safe structured operations.
+
+Supported operations are intentionally narrow: metadata patch, append maintenance review note, and split draft scaffold.
+
+## 7. Trust Drift
+
+Generate a trust drift report when registry decisions and note metadata may have diverged:
+
+```bash
+python <vault_root>/00-global/scripts/trust-drift-report.py --root <vault_root>
+python <vault_root>/00-global/scripts/trust-drift-report.py --root <vault_root> --write
+```
+
+The report detects frontmatter/registry mismatches, missing registry targets, and `verified` notes without strong evidence or evidence checklist fields. It does not modify notes.
