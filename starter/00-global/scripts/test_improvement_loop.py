@@ -5,6 +5,7 @@ import json
 import subprocess
 import sys
 import unittest
+from datetime import date, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -99,6 +100,89 @@ usage_count: 0
         self.assertIn("stale_high_risk", types)
         self.assertIn("negative_feedback", types)
         self.assertIn("missing_evidence_for_verified", types)
+
+    def test_recent_imported_draft_gets_new_note_and_feedback_candidates(self) -> None:
+        loop = load_module()
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_note(
+                root / "fiction-reasoning" / "20-notes" / "new-source.md",
+                f"""
+type: source-note
+domain: fiction-reasoning
+status: draft
+confidence: low
+evidence_level: source_claim
+source: synthetic-example
+ingested: {date.today().isoformat()}
+scope: recently imported source note
+should_not_use_for: reviewed conclusion
+time_sensitivity: medium
+review_cycle: 180d
+""",
+            )
+
+            candidates = loop.build_candidates(root)
+
+        types = {item["candidate_type"] for item in candidates}
+        self.assertIn("recent_imported_draft", types)
+        self.assertIn("missing_feedback_fields", types)
+
+    def test_old_draft_without_usage_does_not_get_new_note_candidate(self) -> None:
+        loop = load_module()
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            old_date = (date.today() - timedelta(days=30)).isoformat()
+            write_note(
+                root / "fiction-reasoning" / "20-notes" / "old-source.md",
+                f"""
+type: source-note
+domain: fiction-reasoning
+status: draft
+confidence: low
+evidence_level: source_claim
+source: synthetic-example
+ingested: {old_date}
+scope: older imported source note
+should_not_use_for: reviewed conclusion
+time_sensitivity: medium
+review_cycle: 180d
+usage_count: 0
+last_used:
+last_feedback:
+failure_modes: []
+improvement_notes: []
+""",
+            )
+
+            candidates = loop.build_candidates(root)
+
+        self.assertNotIn("recent_imported_draft", {item["candidate_type"] for item in candidates})
+
+    def test_recent_global_template_draft_is_not_new_note_candidate(self) -> None:
+        loop = load_module()
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_note(
+                root / "00-global" / "usage-guide.md",
+                f"""
+type: guide
+domain: global
+status: draft
+confidence: high
+evidence_level: user_experience
+source: starter-template
+updated: {date.today().isoformat()}
+scope: starter guide
+should_not_use_for: user content
+time_sensitivity: medium
+review_cycle: 180d
+""",
+            )
+
+            candidates = loop.build_candidates(root)
+
+        self.assertFalse(candidates)
 
     def test_context_run_low_quality_signals_become_candidates(self) -> None:
         loop = load_module()

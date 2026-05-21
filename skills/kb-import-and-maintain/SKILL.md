@@ -33,6 +33,8 @@ If no candidate is clear, ask the user for the vault path. Do not hardcode local
 
 ## Recommended Metadata
 
+`evidence_level` must be one of `ALLOWED_EVIDENCE_LEVEL`: `none`, `source_claim`, `user_experience`, `official_doc`, `source_code`, `experiment`, `backtest`, `production_result`.
+
 ```yaml
 type: source-note
 status: draft
@@ -47,6 +49,16 @@ review_cycle: 180d
 failure_modes: []
 improvement_notes: []
 ```
+
+## Post-Write Validation
+
+After writing or editing an imported note, immediately run a dry-run scan before claiming the import is complete:
+
+```bash
+python <vault_root>/00-global/scripts/kb.py --root <vault_root> scan
+```
+
+If the scan reports findings caused by the new note, fix safe metadata mistakes and re-run scan. If the fix would change trust status, move/delete content, or alter knowledge claims, report the finding and ask the user instead.
 
 ## Maintenance Flow
 

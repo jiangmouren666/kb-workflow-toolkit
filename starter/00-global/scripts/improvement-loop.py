@@ -17,6 +17,7 @@ REVIEW_CYCLES = {"none": None, "30d": 30, "90d": 90, "180d": 180, "365d": 365}
 HIGH_RISK_SENSITIVITY = {"high"}
 HIGH_RISK_DOMAINS = {"quant", "machine-learning", "programming"}
 EXCLUDED_PARTS = {".git", "__pycache__", "audit-reports", "state", "review-batches"}
+RECENT_IMPORT_WINDOW_DAYS = 7
 CONFLICT_PATTERNS = (
     ("random_split_temporal", re.compile(r"\b(random split|randomly split|随机切分|随机划分)\b", re.I), ("time series", "时间序列", "回测", "temporal", "financial", "金融")),
 )
@@ -136,6 +137,19 @@ def apply_review_registry(items: list[dict], root: Path) -> list[dict]:
     return filtered
 
 
+def is_user_content_note(rel: str, meta: dict[str, str]) -> bool:
+    path = Path(rel)
+    if not path.parts:
+        return False
+    if path.parts[0] == "00-global" or path.name in {"README.md", "00-index.md"}:
+        return False
+    if "templates" in path.parts:
+        return False
+    if meta.get("type") in {"index", "guide", "standard", "maintenance", "audit-report"}:
+        return False
+    return True
+
+
 def note_candidates(note: dict) -> list[dict]:
     rel = note["rel"]
     meta = note["meta"]
@@ -145,7 +159,22 @@ def note_candidates(note: dict) -> list[dict]:
     usage_count = parse_int(meta.get("usage_count"))
     time_sensitivity = meta.get("time_sensitivity", "")
     domain = meta.get("primary_domain") or meta.get("domain", "")
+    imported_date = parse_date(meta.get("ingested")) or parse_date(meta.get("updated"))
+    user_content_note = is_user_content_note(rel, meta)
+    recent_import = bool(user_content_note and imported_date and date.today() <= imported_date + timedelta(days=RECENT_IMPORT_WINDOW_DAYS))
     items: list[dict] = []
+
+    if status == "draft" and recent_import:
+        items.append(
+            candidate(
+                rel,
+                "recent_imported_draft",
+                "low",
+                f"draft note was imported or updated within {RECENT_IMPORT_WINDOW_DAYS} days",
+                "Review scope, evidence boundary, feedback fields, and whether the note should be split after initial ingestion.",
+                meta,
+            )
+        )
 
     if status == "draft" and usage_count >= 3:
         items.append(
@@ -183,7 +212,7 @@ def note_candidates(note: dict) -> list[dict]:
             )
         )
 
-    if status in {"reviewed", "verified"}:
+    if status in {"reviewed", "verified"} or recent_import:
         missing_feedback = [field for field in ("usage_count", "last_used", "last_feedback", "failure_modes", "improvement_notes") if field not in meta]
         if missing_feedback:
             items.append(
