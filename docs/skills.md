@@ -27,12 +27,25 @@ It requires the agent to:
 - Run scan, improve, and maintain-plan flows safely.
 - Avoid automatic note rewrites or trust upgrades.
 
+### `kb-conversation-distiller`
+
+Use this when the user explicitly asks to save or distill an agent conversation into the knowledge base.
+
+It requires the agent to:
+
+- Save a concise digest, not a full transcript.
+- Extract reusable decisions, workflows, failure modes, anti-patterns, and follow-up actions.
+- Save as `draft` with `evidence_level: user_experience`.
+- Put digests in `00-global/conversation-digests/` by default.
+- Run scan after writing.
+
 ## Install For Personal Use
 
 ```bash
 mkdir -p ~/.cursor/skills
 cp -R skills/kb-answer-with-citations ~/.cursor/skills/
 cp -R skills/kb-import-and-maintain ~/.cursor/skills/
+cp -R skills/kb-conversation-distiller ~/.cursor/skills/
 ```
 
 ## Install For A Project
@@ -41,6 +54,7 @@ cp -R skills/kb-import-and-maintain ~/.cursor/skills/
 mkdir -p .cursor/skills
 cp -R skills/kb-answer-with-citations .cursor/skills/
 cp -R skills/kb-import-and-maintain .cursor/skills/
+cp -R skills/kb-conversation-distiller .cursor/skills/
 ```
 
 Project skills can be committed with the project so every agent working in that repository sees the same instructions.
@@ -58,6 +72,12 @@ This should trigger `kb-answer-with-citations`.
 ```
 
 This should trigger `kb-import-and-maintain`.
+
+```text
+把刚才这段对话沉淀到知识库
+```
+
+This should trigger `kb-conversation-distiller`.
 
 ## Why Skills Are Separate From CLI
 

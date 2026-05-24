@@ -61,6 +61,7 @@ Install the AI behavior layer if you want Cursor agents to answer from the vault
 mkdir -p ~/.cursor/skills
 cp -R skills/kb-answer-with-citations ~/.cursor/skills/
 cp -R skills/kb-import-and-maintain ~/.cursor/skills/
+cp -R skills/kb-conversation-distiller ~/.cursor/skills/
 ```
 
 See `docs/skills.md` for details.

@@ -11,7 +11,7 @@ This repository packages a clean starter vault, maintenance scripts, companion A
 ## What Is Included
 
 - `starter/`: an empty starter vault with domain standards, global governance docs, and CLI scripts.
-- `skills/`: companion Cursor Skills for cited answers and safe import/maintenance behavior.
+- `skills/`: companion Cursor Skills for cited answers, safe import/maintenance behavior, and manual conversation distillation.
 - `docs/`: installation, usage, workflow, safety, and publishing notes.
 - `examples/`: small sanitized examples that show import, review, and maintenance flows.
 
@@ -80,6 +80,7 @@ The CLI manages notes and maintenance reports. The skills guide AI behavior:
 
 - `skills/kb-answer-with-citations`: answer from the vault with citations, evidence levels, and uncertainty.
 - `skills/kb-import-and-maintain`: import material and run safe maintenance workflows.
+- `skills/kb-conversation-distiller`: manually distill reusable insight from agent conversations into draft digest notes.
 
 See [docs/skills.md](docs/skills.md) for installation and usage.
 
